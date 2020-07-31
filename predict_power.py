@@ -1,5 +1,9 @@
 #
-# predict power generation for a given location and configuration
+# Predict power generation for a given location and configuration
+# Input: cloud.csv file with month and average cloud cover%
+#        Values for latitude, longitude, peak power, panel tilt, panel rotation, and year
+# Output: month.dat file containing the monthly power generated
+#         daily.dat file containing the daily power generated
 #
 from sun_functions import *
 from datetime import *
@@ -58,13 +62,15 @@ def calc_power(LAT, LON, year, month, mday, peak, tilt, rotation, cloud):
 # main section
 # Constant parameters
 MINS_PER_HOUR = 60.0
-LAT = 33.17    
-LON = -96.82 
+LAT = 13.023    
+LON = 77.57
 year = 2020
-peak = 10000
+peak = 3000
 tilt = int(LAT)
 rotation = 180
 
+f = open ("month.dat", "w")
+g = open ("daily.dat", "w")
 tot_power = 0
 cloud_arr = get_cloud_data()
 month_power = defaultdict(int)
@@ -74,13 +80,16 @@ for day in range (1, 366):
     pred_power = calc_power(LAT, LON, year, month, mday, peak, tilt, rotation, cloud)
     tot_power = tot_power + pred_power
     month_power[month] = month_power[month] + pred_power
-    #print (mday, month, cloud, pred_power)
+    outline = str(day) + "," + str(mday) + "," + str(month) + "," + str(pred_power)
+    g.write(outline + "\n")
+    if (day % 30 == 0):
+        print ("Finished day " + str(day) + " of 365")
 
 # dump the power by month
-f = open ("city.dat", "w")
 for key in range (1,13):
     outline = str(key) + "," + str(month_power[key])
     f.write(outline + "\n")
 f.close()
+g.close()
 
 print ("Annual power: " + str(tot_power))
